@@ -339,6 +339,33 @@ class CornersProblem(search.SearchProblem):
 def mDistance(pos1,pos2):
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
+def findShortestPathSearch(pos,goalCorners):
+    if len(goalCorners) == 1:
+        return mDistance(pos,goalCorners[0])
+    else:
+    
+        currState = (pos,[pos],0)
+        path = [pos]
+        visited = []
+        s = util.PriorityQueue()
+        while len(path) < len(goalCorners)+1:
+            if path not in visited:
+                visited.append(path)
+                costs = []
+                for gc in goalCorners:
+                    costs.append((mDistance(currState[0],gc),gc))
+                            
+                for nextCost in costs:
+                    tempPath = path[:]
+                    tempPath.append(nextCost[1])
+                    if tempPath not in visited:
+                        s.push((nextCost[1],tempPath,currState[2]+nextCost[0]),currState[2]+nextCost[0])
+            if s.isEmpty():
+                pass
+            currState = s.pop()
+            path = currState[1]
+        return currState[-1]
+
 def findShortestPath(pos,goalCorners):
     if len(goalCorners) == 1:
         return mDistance(pos,goalCorners[0])
@@ -353,6 +380,8 @@ def findShortestPath(pos,goalCorners):
             if i2 != i:
                 newGoals.append(goalCorners[i2])
         return shortest + findShortestPath(goalCorners[i],newGoals)
+
+        
 
 def cornersHeuristic(state, problem):
   """
@@ -448,6 +477,12 @@ class AStarFoodSearchAgent(SearchAgent):
   def __init__(self):
     self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
     self.searchType = FoodSearchProblem
+    
+def averageFoodDistances(pos,foodPos):
+    totalDist = 0
+    for currFood in foodPos:
+        totalDist += mDistance(pos,currFood)
+    return totalDist / len(foodPos)
 
 def foodHeuristic(state, problem):
   """
@@ -476,7 +511,11 @@ def foodHeuristic(state, problem):
   """
   position, foodGrid = state
   "*** YOUR CODE HERE ***"
-  return 0
+  # shortest path is 60 with BFS
+  if len(foodGrid.asList()) > 0:
+      return averageFoodDistances(position,foodGrid.asList())
+  else:
+      return 0
   
 class ClosestDotSearchAgent(SearchAgent):
   "Search for all food using a sequence of searches"
