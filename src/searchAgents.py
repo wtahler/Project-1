@@ -336,6 +336,23 @@ class CornersProblem(search.SearchProblem):
       if self.walls[x][y]: return 999999
     return len(actions)
 
+def mDistance(pos1,pos2):
+    return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
+
+def findShortestPath(pos,goalCorners):
+    if len(goalCorners) == 1:
+        return mDistance(pos,goalCorners[0])
+    else:
+        distances = []
+        for gc in goalCorners:
+            distances.append(mDistance(pos,gc))
+        shortest = min(distances)
+        i = distances.index(shortest)
+        newGoals = []
+        for i2 in range(len(goalCorners)):
+            if i2 != i:
+                newGoals.append(goalCorners[i2])
+        return shortest + findShortestPath(goalCorners[i],newGoals)
 
 def cornersHeuristic(state, problem):
   """
@@ -361,34 +378,14 @@ def cornersHeuristic(state, problem):
   # make list of remaining corners
   goalCorners = []
   for i in range(4):
-      if ((cornersVisited << i) & 0b1000) is 1:
+      if (cornersVisited >> i & 1) is not 1:
           goalCorners.append(corners[i])
           
-  distances = []
-  for i,gc in enumerate(goalCorners):
-      # first position is distance from currPos to goal:
-      distances.append([abs(currPos[0] - gc[0]) + abs(currPos[1] - gc[1])])
-      for i2,gc2 in enumerate(goalCorners):
-          # now distances to the other goals
-          distances[i].append(abs(gc[0] - gc2[0]) + abs(gc[1] - gc2[1]))
-          
-  # find distance if you follow shortest route starting from each corner...
-  routeDists = []
-  for i,gc in enumerate(goalCorners):
-      mini = min(distances[i][1:])
-      routeDists.append(mini)
-      remainingCorners = 
-      for i2,gc2 in enumerate()
-          
-  #distances is a list of lists, the first index is the goal and the second index
-  # is the Manhattan distance from the currPos to it then from it to the other
-  # corners
-          
-  # need to find distance between all the corners, ignore walls at first
-  # weight is manhattan distance to closest unvisited corner + 
-  return currMin
-  
-  return 0 # Default to trivial solution
+  if len(goalCorners) == 0:
+      return 0;
+  else:
+      return findShortestPath(currPos,goalCorners)
+      
 
 class AStarCornersAgent(SearchAgent):
   "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
